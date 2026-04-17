@@ -48,8 +48,9 @@ export default function WeddingRunner() {
 
     const Phaser = (await import("phaser")).default;
 
-    const W = Math.min(420, window.innerWidth - 16);
-    const H = Math.min(640, window.innerHeight - 160);
+    const containerW = containerRef.current.clientWidth || window.innerWidth - 80;
+    const W = Math.max(260, Math.min(380, containerW));
+    const H = Math.min(520, Math.round(W * 1.4));
     const LANES = 3;
     const laneX = (i: number) => W * (0.2 + i * 0.3);
 

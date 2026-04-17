@@ -1,6 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { wedding } from "@/lib/data";
+
+const WeddingRunner = dynamic(() => import("@/components/game/WeddingRunner"), { ssr: false });
 
 /* ────────── 공통 ────────── */
 
@@ -646,10 +649,7 @@ export function Guestbook() {
 export function GameBanner() {
   return (
     <Section>
-      <a
-        href="/game"
-        className="block overflow-hidden rounded-3xl bg-[color:var(--color-blush)] p-8 text-center shadow-lg transition active:scale-[0.99]"
-      >
+      <div className="overflow-hidden rounded-3xl bg-[color:var(--color-blush)] p-6 text-center shadow-lg">
         <p className="eyebrow">Special</p>
         <p className="mt-3 font-[family-name:var(--font-accent)] text-2xl text-[color:var(--color-charcoal)]">
           💍 Wedding Runner
@@ -657,10 +657,10 @@ export function GameBanner() {
         <p className="mt-2 text-[15px] text-[color:var(--color-charcoal)]/80">
           오늘의 주인공과 함께 식장까지 달려보세요.
         </p>
-        <span className="mt-5 inline-block rounded-full bg-[color:var(--color-charcoal)] px-6 py-2 text-[13px] tracking-[0.3em] text-[color:var(--color-paper)]">
-          PLAY →
-        </span>
-      </a>
+        <div className="mt-5 rounded-2xl bg-white/70 p-2">
+          <WeddingRunner />
+        </div>
+      </div>
     </Section>
   );
 }
