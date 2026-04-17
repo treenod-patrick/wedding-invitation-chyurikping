@@ -282,10 +282,9 @@ export function Gallery() {
 /* ────────── 오시는 길 ────────── */
 
 export function Location() {
-  const { name, address, detail, lat, lng, tel } = wedding.venue;
-  const mapUrl = `https://maps.google.com/maps?q=${lat},${lng}&z=16&output=embed`;
+  const { name, address, detail, lat, lng, tel, naverMapUrl } = wedding.venue;
 
-  const naverWeb = `https://map.naver.com/p/search/${encodeURIComponent(name)}`;
+  const naverWeb = naverMapUrl;
   const naverApp = `nmap://place?lat=${lat}&lng=${lng}&name=${encodeURIComponent(name)}&appname=wedding.chyurikping`;
   const naverRouteWeb = `https://map.naver.com/p/directions/-/-/-/car?c=15,0,0,0,dh&destination=${encodeURIComponent(name)},${lng},${lat}`;
   const naverRouteApp = `nmap://route/car?dlat=${lat}&dlng=${lng}&dname=${encodeURIComponent(name)}&appname=wedding.chyurikping`;
@@ -320,9 +319,42 @@ export function Location() {
   return (
     <Section>
       <SectionTitle en="Location" ko="오시는 길" />
-      <div className="overflow-hidden rounded-sm border border-[color:var(--color-line)]">
-        <iframe src={mapUrl} className="h-64 w-full border-0" loading="lazy" />
-      </div>
+      <a
+        href={naverWeb}
+        onClick={openWithFallback(naverApp, naverWeb)}
+        target="_blank"
+        rel="noreferrer"
+        className="relative block h-64 w-full overflow-hidden rounded-sm border border-[color:var(--color-line)] bg-[color:var(--color-blush)]/30"
+      >
+        <svg
+          viewBox="0 0 400 256"
+          xmlns="http://www.w3.org/2000/svg"
+          className="absolute inset-0 h-full w-full"
+          preserveAspectRatio="xMidYMid slice"
+          aria-hidden="true"
+        >
+          <defs>
+            <pattern id="map-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeOpacity="0.12" strokeWidth="1" />
+            </pattern>
+          </defs>
+          <rect width="400" height="256" fill="url(#map-grid)" className="text-[color:var(--color-charcoal)]" />
+          <path d="M 0 180 Q 120 120 240 160 T 400 140" fill="none" stroke="currentColor" strokeOpacity="0.18" strokeWidth="2" className="text-[color:var(--color-rose-deep)]" />
+          <path d="M 60 40 Q 160 90 260 60 T 400 90" fill="none" stroke="currentColor" strokeOpacity="0.14" strokeWidth="2" className="text-[color:var(--color-rose-deep)]" />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[color:var(--color-rose-deep)] text-white shadow-md">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
+              <path d="M12 2C7.58 2 4 5.58 4 10c0 5.25 7.05 11.3 7.35 11.56a1 1 0 0 0 1.3 0C12.95 21.3 20 15.25 20 10c0-4.42-3.58-8-8-8Zm0 10.75A2.75 2.75 0 1 1 14.75 10 2.75 2.75 0 0 1 12 12.75Z" />
+            </svg>
+          </div>
+          <p className="mt-3 font-[family-name:var(--font-accent)] text-xl tracking-wide text-[color:var(--color-charcoal)]">{name}</p>
+          <p className="mt-1 text-[14px] text-[color:var(--color-mute)]">{address}</p>
+          <span className="mt-4 inline-flex items-center gap-1 rounded-full bg-white/85 px-4 py-1.5 text-[13px] tracking-widest text-[color:var(--color-rose-deep)]">
+            네이버 지도에서 열기 →
+          </span>
+        </div>
+      </a>
       <div className="mt-5 text-center">
         <p className="font-[family-name:var(--font-accent)] text-xl tracking-wide text-[color:var(--color-charcoal)]">{name}</p>
         <p className="mt-2 text-[15px] text-[color:var(--color-mute)]">{address}</p>

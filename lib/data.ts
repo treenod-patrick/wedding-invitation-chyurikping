@@ -26,6 +26,7 @@ export const wedding = {
     tel: "02-6316-7700",
     lat: 37.6372,
     lng: 127.0694,
+    naverMapUrl: "https://map.naver.com/p/search/%ED%85%8C%EB%9D%BC%EB%A6%AC%EC%9B%80%20%EC%84%9C%EC%9A%B8/place/1618264201?c=15.00,0,0,0,dh&placePath=/home",
   },
   greeting: {
     title: "결혼합니다",
