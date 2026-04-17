@@ -1,23 +1,26 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ivory: #f8f4ec;
-  --color-warm-gray: #8b8278;
-  --color-gold: #c9a961;
-  --color-ink: #2b2824;
-  --color-blush: #e8d5c4;
+  --color-paper: #fbf8f5;
+  --color-blush: #f4e4dc;
+  --color-rose: #d9a5a0;
+  --color-rose-deep: #b87d78;
+  --color-charcoal: #2f2a28;
+  --color-mute: #9a8e88;
+  --color-line: #e6dcd5;
 }
 
 :root {
-  --font-primary: "Pretendard", system-ui, sans-serif;
+  --font-primary: "Gowun Batang", "Noto Serif KR", serif;
   --font-accent: "Cormorant Garamond", serif;
 }
 
 html, body {
-  background: var(--color-ivory, #f8f4ec);
-  color: var(--color-ink, #2b2824);
+  background: var(--color-paper, #fbf8f5);
+  color: var(--color-charcoal, #2f2a28);
   font-family: var(--font-primary);
   -webkit-font-smoothing: antialiased;
+  letter-spacing: 0.01em;
 }
 
 .font-myeongjo { font-family: "Nanum Myeongjo", serif; }
@@ -34,22 +37,30 @@ html, body {
 .font-single-day { font-family: "Single Day", cursive; }
 
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.fade-up { animation: fade-up 0.8s ease-out both; }
+.fade-up { animation: fade-up 1.2s ease-out both; }
 
-.divider {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  color: var(--color-gold);
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
-.divider::before, .divider::after {
-  content: "";
-  height: 1px;
-  flex: 1;
-  background: linear-gradient(to right, transparent, var(--color-gold), transparent);
-  max-width: 80px;
+.fade-in { animation: fade-in 1.6s ease-out both; }
+
+.eyebrow {
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+  letter-spacing: 0.35em;
+  font-size: 0.7rem;
+  color: var(--color-rose-deep);
+  text-transform: uppercase;
+}
+
+.section-title {
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  font-size: 1.75rem;
+  color: var(--color-charcoal);
 }
