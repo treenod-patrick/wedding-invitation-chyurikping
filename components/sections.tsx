@@ -4,10 +4,10 @@ import { wedding } from "@/lib/data";
 
 /* ────────── 공통 ────────── */
 
-export function Section({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+export function Section({ children, className = "", card = false }: { children: React.ReactNode; className?: string; card?: boolean }) {
   return (
-    <section className={`px-7 py-20 ${className}`}>
-      <div className="mx-auto max-w-md">{children}</div>
+    <section className={`px-5 py-12 ${className}`}>
+      <div className={`mx-auto max-w-md ${card ? "text-card" : ""}`}>{children}</div>
     </section>
   );
 }
@@ -85,7 +85,7 @@ export function Hero() {
 
 export function Greeting() {
   return (
-    <Section>
+    <Section card>
       <SectionTitle en="Invitation" ko="초대합니다" />
       <p className="whitespace-pre-line text-center leading-[2.1] text-[17px] text-[color:var(--color-charcoal)]/85">
         {wedding.greeting.body}
@@ -131,7 +131,7 @@ export function People() {
     );
   };
   return (
-    <Section className="bg-[color:var(--color-blush)]/25">
+    <Section card>
       <SectionTitle en="The Couple" ko="신랑 · 신부" />
       <div className="grid grid-cols-2 gap-4 items-start">
         <Card who="groom" />
@@ -166,7 +166,7 @@ export function Countdown() {
     { n: secs, l: "SEC" },
   ];
   return (
-    <Section>
+    <Section card>
       <SectionTitle en="D-Day" ko="우리의 그 날까지" />
       <div className="grid grid-cols-4 gap-2 text-center">
         {cells.map((c) => (
@@ -207,7 +207,7 @@ export function Calendar() {
   const timeLabel = `${hh < 12 ? "오전" : "오후"} ${((hh + 11) % 12) + 1}시${mm ? ` ${mm}분` : ""}`;
 
   return (
-    <Section className="bg-[color:var(--color-blush)]/20">
+    <Section card>
       <SectionTitle en="When" ko="예식일" />
       <div className="mx-auto max-w-xs rounded-sm bg-white p-5 shadow-[0_2px_24px_rgba(184,125,120,0.08)]">
         <p className="text-center font-[family-name:var(--font-accent)] tracking-[0.2em] text-[color:var(--color-rose-deep)]">
@@ -319,12 +319,23 @@ export function Location() {
   return (
     <Section>
       <SectionTitle en="Location" ko="오시는 길" />
+      <div className="text-card mb-6 text-center">
+        <p className="font-[family-name:var(--font-accent)] text-xl tracking-wide text-[color:var(--color-charcoal)]">{name}</p>
+        <p className="mt-2 text-[15px] text-[color:var(--color-mute)]">{address}</p>
+        <p className="text-[15px] text-[color:var(--color-mute)]">{detail} · {tel}</p>
+        <button
+          onClick={() => copy(address)}
+          className="mt-3 rounded-full border border-[color:var(--color-line)] bg-white px-4 py-1.5 text-[13px] tracking-widest text-[color:var(--color-rose-deep)]"
+        >
+          주소 복사
+        </button>
+      </div>
       <a
         href={naverWeb}
         onClick={openWithFallback(naverApp, naverWeb)}
         target="_blank"
         rel="noreferrer"
-        className="relative block h-64 w-full overflow-hidden rounded-sm border border-[color:var(--color-line)] bg-[color:var(--color-blush)]/30"
+        className="relative block h-64 w-full overflow-hidden rounded-sm border border-[color:var(--color-line)] bg-white"
       >
         <svg
           viewBox="0 0 400 256"
@@ -355,18 +366,6 @@ export function Location() {
           </span>
         </div>
       </a>
-      <div className="mt-5 text-center">
-        <p className="font-[family-name:var(--font-accent)] text-xl tracking-wide text-[color:var(--color-charcoal)]">{name}</p>
-        <p className="mt-2 text-[15px] text-[color:var(--color-mute)]">{address}</p>
-        <p className="text-[15px] text-[color:var(--color-mute)]">{detail} · {tel}</p>
-        <button
-          onClick={() => copy(address)}
-          className="mt-3 rounded-full border border-[color:var(--color-line)] px-4 py-1.5 text-[13px] tracking-widest text-[color:var(--color-rose-deep)]"
-        >
-          주소 복사
-        </button>
-      </div>
-
       <div className="mt-8">
         <p className="mb-3 text-center text-[24px] tracking-[0.35em] text-[color:var(--color-mute)]">MAP</p>
         <div className="grid grid-cols-2 gap-2">
@@ -420,7 +419,7 @@ export function Location() {
         </div>
       </div>
 
-      <div className="mt-8 space-y-3 rounded-sm bg-[color:var(--color-blush)]/25 p-5 text-[15px] text-[color:var(--color-charcoal)]/80">
+      <div className="text-card mt-8 space-y-3 text-[15px] text-[color:var(--color-charcoal)]/80">
         <div className="flex gap-3">
           <span className="min-w-[48px] text-[color:var(--color-rose-deep)]">지하철</span>
           <span>7호선 하계역 도보 약 7분</span>
@@ -486,7 +485,7 @@ export function Account() {
     );
   };
   return (
-    <Section className="bg-[color:var(--color-blush)]/20">
+    <Section card>
       <SectionTitle en="Heart" ko="마음 전하실 곳" />
       <p className="mb-8 text-center text-[15px] leading-loose text-[color:var(--color-mute)]">
         참석이 어려우신 분들을 위해<br />
