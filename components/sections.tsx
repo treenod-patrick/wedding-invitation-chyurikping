@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { wedding } from "@/lib/data";
 
-const WeddingRunner = dynamic(() => import("@/components/game/WeddingRunner"), { ssr: false });
+const WeddingAdventure = dynamic(() => import("@/components/game/adventure/WeddingAdventure"), { ssr: false });
 
 /* ────────── 공통 ────────── */
 
@@ -649,7 +649,7 @@ export function GameBanner() {
           오늘의 주인공과 함께 식장까지 달려보세요.
         </p>
         <div className="mt-5 rounded-2xl bg-white/70 p-2">
-          <WeddingRunner />
+          <WeddingAdventure />
         </div>
       </div>
     </Section>
