@@ -648,7 +648,7 @@ export function GameBanner() {
     <Section>
       <a
         href="/game"
-        className="block overflow-hidden rounded-3xl bg-gradient-to-br from-[color:var(--color-peach)] via-[color:var(--color-blush)] to-[color:var(--color-sage)] p-8 text-center shadow-lg transition active:scale-[0.99]"
+        className="block overflow-hidden rounded-3xl bg-[color:var(--color-blush)] p-8 text-center shadow-lg transition active:scale-[0.99]"
       >
         <p className="eyebrow">Special</p>
         <p className="mt-3 font-[family-name:var(--font-accent)] text-2xl text-[color:var(--color-charcoal)]">
