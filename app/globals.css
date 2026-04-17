@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ivory: #f8f4ec;
+  --color-warm-gray: #8b8278;
+  --color-gold: #c9a961;
+  --color-ink: #2b2824;
+  --color-blush: #e8d5c4;
+}
+
+:root {
+  --font-primary: "Pretendard", system-ui, sans-serif;
+  --font-accent: "Cormorant Garamond", serif;
+}
+
+html, body {
+  background: var(--color-ivory, #f8f4ec);
+  color: var(--color-ink, #2b2824);
+  font-family: var(--font-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-myeongjo { font-family: "Nanum Myeongjo", serif; }
+.font-gowun-batang { font-family: "Gowun Batang", serif; }
+.font-noto-serif { font-family: "Noto Serif KR", serif; }
+.font-pretendard { font-family: "Pretendard", sans-serif; }
+.font-noto-sans { font-family: "Noto Sans KR", sans-serif; }
+.font-gmarket { font-family: "Gmarket Sans", sans-serif; }
+.font-gowun-dodum { font-family: "Gowun Dodum", sans-serif; }
+.font-nanum-pen { font-family: "Nanum Pen Script", cursive; }
+.font-cute { font-family: "Cute Font", cursive; }
+.font-gaegu { font-family: "Gaegu", cursive; }
+.font-east-sea { font-family: "East Sea Dokdo", cursive; }
+.font-single-day { font-family: "Single Day", cursive; }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fade-up 0.8s ease-out both; }
+
+.divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  color: var(--color-gold);
+}
+.divider::before, .divider::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: linear-gradient(to right, transparent, var(--color-gold), transparent);
+  max-width: 80px;
+}
