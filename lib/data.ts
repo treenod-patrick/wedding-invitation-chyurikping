@@ -32,6 +32,19 @@ export const wedding = {
     title: "결혼합니다",
     body: "서로의 계절을 함께 걸으며\n같은 풍경을 바라보게 되었습니다.\n\n작은 시작 위에\n귀한 발걸음 더해 주시면\n오래도록 따뜻한 기억으로 간직하겠습니다.",
   },
+  transport: {
+    subway: [
+      { line: "7호선", station: "하계역", exit: "2번 출구", walk: "도보 약 7분" },
+    ],
+    parking: {
+      capacity: "건물 내 4개 주차장 운영 (약 700대 규모)",
+      time: "결혼식 하객 무료 주차 안내 (식장 안내 데스크에서 확인)",
+      tip: "주말 주변 정체가 있을 수 있어, 가급적 대중교통 이용을 부탁드립니다.",
+      detail: "만차 시 인근 대진고등학교 보조 주차장 이용 가능",
+    },
+    bus: "노원구청·하계역 정류장 환승 후 도보 5분",
+    shuttle: "하계역 ↔ 식장 간 단거리, 별도 셔틀 미운영",
+  },
   gallery: [
     "https://picsum.photos/seed/w1/800/1000",
     "https://picsum.photos/seed/w2/800/1000",

@@ -1,13 +1,16 @@
 @import "tailwindcss";
 
 @theme {
-  --color-paper: #fbf8f5;
-  --color-blush: #f4e4dc;
-  --color-rose: #d9a5a0;
-  --color-rose-deep: #b87d78;
-  --color-charcoal: #2f2a28;
-  --color-mute: #9a8e88;
-  --color-line: #e6dcd5;
+  --color-paper: #fdfbf7;
+  --color-blush: #ffe4d6;
+  --color-peach: #ffd9c4;
+  --color-rose: #f5b8a8;
+  --color-rose-deep: #e89378;
+  --color-sage: #d8e5d2;
+  --color-cream: #fff5ec;
+  --color-charcoal: #4a3c36;
+  --color-mute: #b29c91;
+  --color-line: #f3e4d7;
 }
 
 :root {
@@ -24,10 +27,24 @@ html, body {
 }
 
 .text-card {
-  background-color: color-mix(in srgb, var(--color-blush) 55%, white);
-  border-radius: 1.25rem;
+  background-color: color-mix(in srgb, var(--color-blush) 65%, white);
+  border-radius: 1.5rem;
   padding: 1.75rem 1.5rem;
-  box-shadow: 0 1px 16px rgba(184, 125, 120, 0.06);
+  box-shadow: 0 2px 24px rgba(232, 147, 120, 0.08);
+}
+
+.pixel-font {
+  font-family: "Press Start 2P", "Courier New", monospace;
+  letter-spacing: 0.05em;
+  image-rendering: pixelated;
+}
+
+.game-bg {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 217, 196, 0.6), transparent 40%),
+    radial-gradient(circle at 80% 30%, rgba(216, 229, 210, 0.5), transparent 40%),
+    radial-gradient(circle at 50% 90%, rgba(245, 184, 168, 0.5), transparent 40%),
+    var(--color-cream);
 }
 
 .font-myeongjo { font-family: "Nanum Myeongjo", serif; }

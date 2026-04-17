@@ -419,18 +419,23 @@ export function Location() {
         </div>
       </div>
 
-      <div className="text-card mt-8 space-y-3 text-[15px] text-[color:var(--color-charcoal)]/80">
-        <div className="flex gap-3">
-          <span className="min-w-[48px] text-[color:var(--color-rose-deep)]">지하철</span>
-          <span>7호선 하계역 도보 약 7분</span>
+      <div className="text-card mt-8 space-y-4 text-[15px] leading-relaxed text-[color:var(--color-charcoal)]/85">
+        <div>
+          <p className="mb-1 font-semibold text-[color:var(--color-rose-deep)]">🚇 지하철</p>
+          {wedding.transport.subway.map((s, i) => (
+            <p key={i}>{s.line} {s.station} {s.exit} · {s.walk}</p>
+          ))}
         </div>
-        <div className="flex gap-3">
-          <span className="min-w-[48px] text-[color:var(--color-rose-deep)]">주소</span>
-          <span>{address}</span>
+        <div>
+          <p className="mb-1 font-semibold text-[color:var(--color-rose-deep)]">🚌 버스</p>
+          <p>{wedding.transport.bus}</p>
         </div>
-        <div className="flex gap-3">
-          <span className="min-w-[48px] text-[color:var(--color-rose-deep)]">주차</span>
-          <span>건물 주차장 이용 가능</span>
+        <div>
+          <p className="mb-1 font-semibold text-[color:var(--color-rose-deep)]">🅿️ 주차 안내</p>
+          <p>{wedding.transport.parking.capacity}</p>
+          <p className="mt-1 text-[color:var(--color-mute)]">{wedding.transport.parking.time}</p>
+          <p className="mt-1 text-[color:var(--color-mute)]">{wedding.transport.parking.detail}</p>
+          <p className="mt-2 text-[14px] italic text-[color:var(--color-rose-deep)]">{wedding.transport.parking.tip}</p>
         </div>
       </div>
     </Section>
@@ -495,6 +500,167 @@ export function Account() {
         {side("groom")}
         {side("bride")}
       </div>
+    </Section>
+  );
+}
+
+/* ────────── 방명록 ────────── */
+
+type GuestEntry = { id: string; name: string; message: string; ts: number; hearts: number };
+
+export function Guestbook() {
+  const STORAGE_KEY = "wedding_guestbook_v1";
+  const [entries, setEntries] = useState<GuestEntry[]>([]);
+  const [name, setName] = useState("");
+  const [message, setMessage] = useState("");
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) setEntries(JSON.parse(raw));
+    } catch {}
+  }, []);
+
+  const persist = (next: GuestEntry[]) => {
+    setEntries(next);
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {}
+  };
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim() || !message.trim()) return;
+    const next: GuestEntry[] = [
+      { id: crypto.randomUUID(), name: name.trim(), message: message.trim(), ts: Date.now(), hearts: 0 },
+      ...entries,
+    ];
+    persist(next);
+    setName("");
+    setMessage("");
+    setOpen(false);
+  };
+
+  const heart = (id: string) => {
+    persist(entries.map((e) => (e.id === id ? { ...e, hearts: e.hearts + 1 } : e)));
+  };
+
+  const fmt = (ts: number) => {
+    const d = new Date(ts);
+    const yy = String(d.getFullYear()).slice(2);
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mi = String(d.getMinutes()).padStart(2, "0");
+    return `${yy}.${mm}.${dd} ${hh}:${mi}`;
+  };
+
+  return (
+    <Section>
+      <SectionTitle en="Guestbook" ko="방명록" />
+      <p className="mb-6 text-center text-[15px] text-[color:var(--color-mute)]">
+        축복의 한마디를 남겨 주세요.
+      </p>
+
+      <button
+        onClick={() => setOpen(true)}
+        className="mx-auto mb-8 flex items-center gap-2 rounded-full bg-[color:var(--color-rose-deep)] px-6 py-3 text-[14px] font-medium tracking-[0.2em] text-white shadow-md"
+      >
+        ✍️ 메시지 남기기
+      </button>
+
+      <div className="space-y-3">
+        {entries.length === 0 && (
+          <div className="text-card text-center text-[14px] text-[color:var(--color-mute)]">
+            첫 메시지의 주인공이 되어 주세요.
+          </div>
+        )}
+        {entries.map((e) => (
+          <div key={e.id} className="rounded-2xl bg-white px-5 py-4 shadow-[0_2px_18px_rgba(232,147,120,0.08)] ring-1 ring-[color:var(--color-line)]">
+            <div className="flex items-baseline justify-between">
+              <p className="font-semibold text-[color:var(--color-charcoal)]">{e.name}</p>
+              <p className="text-[12px] text-[color:var(--color-mute)]">{fmt(e.ts)}</p>
+            </div>
+            <p className="mt-2 whitespace-pre-line text-[15px] leading-relaxed text-[color:var(--color-charcoal)]/85">
+              {e.message}
+            </p>
+            <button
+              onClick={() => heart(e.id)}
+              className="mt-3 inline-flex items-center gap-1 text-[13px] text-[color:var(--color-rose-deep)]"
+            >
+              ♥ <span>{e.hearts}</span>
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center" onClick={() => setOpen(false)}>
+          <form
+            onClick={(ev) => ev.stopPropagation()}
+            onSubmit={submit}
+            className="w-full max-w-md rounded-t-3xl bg-[color:var(--color-paper)] p-6 sm:rounded-3xl"
+          >
+            <p className="mb-4 text-center font-[family-name:var(--font-accent)] text-xl text-[color:var(--color-charcoal)]">
+              메시지 남기기
+            </p>
+            <input
+              value={name}
+              onChange={(ev) => setName(ev.target.value)}
+              placeholder="이름"
+              maxLength={20}
+              className="mb-3 w-full rounded-xl border border-[color:var(--color-line)] bg-white px-4 py-3 text-[15px] outline-none focus:border-[color:var(--color-rose-deep)]"
+            />
+            <textarea
+              value={message}
+              onChange={(ev) => setMessage(ev.target.value)}
+              placeholder="축하 메시지를 남겨 주세요"
+              maxLength={300}
+              rows={4}
+              className="mb-4 w-full resize-none rounded-xl border border-[color:var(--color-line)] bg-white px-4 py-3 text-[15px] outline-none focus:border-[color:var(--color-rose-deep)]"
+            />
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="flex-1 rounded-full border border-[color:var(--color-line)] py-3 text-[14px] text-[color:var(--color-mute)]"
+              >
+                취소
+              </button>
+              <button
+                type="submit"
+                className="flex-1 rounded-full bg-[color:var(--color-rose-deep)] py-3 text-[14px] font-medium text-white"
+              >
+                남기기
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+    </Section>
+  );
+}
+
+/* ────────── 게임 CTA ────────── */
+
+export function GameBanner() {
+  return (
+    <Section>
+      <a
+        href="/game"
+        className="block overflow-hidden rounded-3xl bg-gradient-to-br from-[color:var(--color-peach)] via-[color:var(--color-blush)] to-[color:var(--color-sage)] p-8 text-center shadow-lg transition active:scale-[0.99]"
+      >
+        <p className="eyebrow">Special</p>
+        <p className="mt-3 font-[family-name:var(--font-accent)] text-2xl text-[color:var(--color-charcoal)]">
+          💍 Wedding Runner
+        </p>
+        <p className="mt-2 text-[15px] text-[color:var(--color-charcoal)]/80">
+          오늘의 주인공과 함께 식장까지 달려보세요.
+        </p>
+        <span className="mt-5 inline-block rounded-full bg-[color:var(--color-charcoal)] px-6 py-2 text-[13px] tracking-[0.3em] text-[color:var(--color-paper)]">
+          PLAY →
+        </span>
+      </a>
     </Section>
   );
 }

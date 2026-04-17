@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import FontPicker from "@/components/FontPicker";
-import { Hero, Greeting, People, Countdown, Calendar, Gallery, Location, Account, Share } from "@/components/sections";
+import { Hero, Greeting, People, Countdown, Calendar, Gallery, Location, Account, Guestbook, GameBanner, Share } from "@/components/sections";
 import { fonts, type FontId } from "@/lib/data";
 
 export default function Home() {
@@ -16,7 +16,9 @@ export default function Home() {
       <Calendar />
       <Gallery />
       <Location />
+      <GameBanner />
       <Account />
+      <Guestbook />
       <Share />
       <FontPicker value={font} onChange={setFont} />
     </main>
