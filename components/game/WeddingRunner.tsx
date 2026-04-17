@@ -1,13 +1,12 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import type Phaser from "phaser";
 
 type GameStatus = "intro" | "playing" | "ending" | "gameover";
+type ItemKind = "ring" | "heart" | "champagne" | "envelope" | "cake";
+type Score = { name: string; score: number; ts: number };
 
 const LEADERBOARD_KEY = "wedding_runner_leaderboard_v1";
 const NICK_KEY = "wedding_runner_nick";
-
-type Score = { name: string; score: number; ts: number };
 
 function readBoard(): Score[] {
   if (typeof window === "undefined") return [];
@@ -25,9 +24,22 @@ function writeBoard(board: Score[]) {
   } catch {}
 }
 
+const ITEM_META: Record<ItemKind, { label: string; value: number; isHazard: boolean }> = {
+  ring: { label: "💍", value: 100, isHazard: false },
+  heart: { label: "♥", value: 50, isHazard: false },
+  champagne: { label: "🥂", value: 150, isHazard: false },
+  envelope: { label: "✉", value: -100, isHazard: true },
+  cake: { label: "🎂", value: -1, isHazard: true },
+};
+
+type Sprite = { x: number; y: number; lane: number; kind: ItemKind; hit?: boolean };
+
 export default function WeddingRunner() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const gameRef = useRef<Phaser.Game | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const rafRef = useRef<number | null>(null);
+  const runningRef = useRef(false);
+
   const [status, setStatus] = useState<GameStatus>("intro");
   const [finalScore, setFinalScore] = useState(0);
   const [nick, setNick] = useState("");
@@ -42,15 +54,33 @@ export default function WeddingRunner() {
     }
   }, []);
 
-  const startGame = async () => {
-    if (!containerRef.current || gameRef.current) return;
+  useEffect(() => () => {
+    runningRef.current = false;
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+  }, []);
+
+  const startGame = () => {
+    if (runningRef.current) return;
+    const canvas = canvasRef.current;
+    const container = containerRef.current;
+    if (!canvas || !container) return;
+
     setStatus("playing");
 
-    const Phaser = await import("phaser");
+    const cssW = Math.max(260, Math.min(380, container.clientWidth || 320));
+    const cssH = Math.min(520, Math.round(cssW * 1.4));
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.style.width = `${cssW}px`;
+    canvas.style.height = `${cssH}px`;
+    canvas.width = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssH * dpr);
 
-    const containerW = containerRef.current.clientWidth || window.innerWidth - 80;
-    const W = Math.max(260, Math.min(380, containerW));
-    const H = Math.min(520, Math.round(W * 1.4));
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.scale(dpr, dpr);
+
+    const W = cssW;
+    const H = cssH;
     const LANES = 3;
     const laneX = (i: number) => W * (0.2 + i * 0.3);
 
@@ -60,248 +90,281 @@ export default function WeddingRunner() {
     let invuln = 0;
     let speed = 220;
     const DURATION_MS = 60_000;
+    let last = performance.now();
+    let spawnAcc = 0;
 
-    let scoreText: Phaser.GameObjects.Text;
-    let timerText: Phaser.GameObjects.Text;
-    let player: Phaser.GameObjects.Container;
-    let items: Phaser.GameObjects.Group;
-    let obstacles: Phaser.GameObjects.Group;
+    const sprites: Sprite[] = [];
     let cleared = false;
+    let finished = false;
 
-    const TYPES = {
-      ring: { color: 0xfff6b0, ring: 0xffcf66, value: 100, label: "💍" },
-      heart: { color: 0xffb6c1, ring: 0xff7a8a, value: 50, label: "♥" },
-      champagne: { color: 0xfff2cc, ring: 0xe6b35c, value: 150, label: "🥂" },
-      envelope: { color: 0xffe0e0, ring: 0xd97a7a, value: -100, label: "✉" },
-      cake: { color: 0xffffff, ring: 0xff5b78, value: -1, label: "🎂" },
-    } as const;
+    runningRef.current = true;
 
-    type ItemKind = keyof typeof TYPES;
-
-    const config: Phaser.Types.Core.GameConfig = {
-      type: Phaser.AUTO,
-      parent: containerRef.current,
-      width: W,
-      height: H,
-      backgroundColor: "#fff5ec",
-      physics: { default: "arcade", arcade: { gravity: { x: 0, y: 0 }, debug: false } },
-      scene: {
-        preload() {},
-        create(this: Phaser.Scene) {
-          const scene = this;
-
-          // 카펫(레드 카펫이 아니라 부드러운 핑크 카펫)
-          const carpet = scene.add.graphics();
-          carpet.fillStyle(0xffe4d6, 0.8);
-          carpet.fillRect(W * 0.12, 0, W * 0.76, H);
-          carpet.lineStyle(2, 0xe89378, 0.4);
-          for (let y = 0; y < H; y += 24) {
-            carpet.lineBetween(W * 0.12, y, W * 0.88, y);
-          }
-          // 양옆 하객 영역
-          const sideL = scene.add.graphics();
-          sideL.fillStyle(0xd8e5d2, 0.5);
-          sideL.fillRect(0, 0, W * 0.12, H);
-          const sideR = scene.add.graphics();
-          sideR.fillStyle(0xd8e5d2, 0.5);
-          sideR.fillRect(W * 0.88, 0, W * 0.12, H);
-
-          // 플레이어 (도트풍 신랑 캐릭터 - 원형 머리 + 사각형 몸)
-          player = scene.add.container(laneX(lane), H - 90);
-          const body = scene.add.graphics();
-          body.fillStyle(0x4a3c36, 1); // 검정 턱시도
-          body.fillRoundedRect(-14, -14, 28, 32, 4);
-          body.fillStyle(0xffffff, 1);
-          body.fillRect(-4, -10, 8, 20); // 셔츠
-          body.fillStyle(0xe89378, 1);
-          body.fillTriangle(-3, -10, 3, -10, 0, -2); // 보타이
-          const head = scene.add.graphics();
-          head.fillStyle(0xfde0c5, 1);
-          head.fillCircle(0, -28, 11);
-          head.fillStyle(0x3a2a20, 1);
-          head.fillRect(-9, -38, 18, 6);
-          head.fillStyle(0x2f2a28, 1);
-          head.fillCircle(-4, -28, 1.5);
-          head.fillCircle(4, -28, 1.5);
-          player.add([body, head]);
-          scene.physics.world.enable(player);
-          (player.body as Phaser.Physics.Arcade.Body).setSize(28, 60).setOffset(-14, -40);
-
-          items = scene.physics.add.group();
-          obstacles = scene.physics.add.group();
-
-          scoreText = scene.add.text(12, 12, "0", {
-            fontFamily: "Courier New, monospace",
-            fontSize: "22px",
-            color: "#4a3c36",
-          });
-          timerText = scene.add.text(W - 12, 12, "60", {
-            fontFamily: "Courier New, monospace",
-            fontSize: "22px",
-            color: "#e89378",
-          }).setOrigin(1, 0);
-
-          const moveTo = (newLane: number) => {
-            lane = Phaser.Math.Clamp(newLane, 0, LANES - 1);
-            scene.tweens.add({ targets: player, x: laneX(lane), duration: 120, ease: "Quad.easeOut" });
-          };
-
-          scene.input.keyboard?.on("keydown-LEFT", () => moveTo(lane - 1));
-          scene.input.keyboard?.on("keydown-RIGHT", () => moveTo(lane + 1));
-          scene.input.keyboard?.on("keydown-A", () => moveTo(lane - 1));
-          scene.input.keyboard?.on("keydown-D", () => moveTo(lane + 1));
-
-          let startX = 0;
-          scene.input.on("pointerdown", (p: Phaser.Input.Pointer) => { startX = p.x; });
-          scene.input.on("pointerup", (p: Phaser.Input.Pointer) => {
-            const dx = p.x - startX;
-            if (Math.abs(dx) < 18) {
-              if (p.x < W / 2) moveTo(lane - 1);
-              else moveTo(lane + 1);
-            } else if (dx > 18) moveTo(lane + 1);
-            else if (dx < -18) moveTo(lane - 1);
-          });
-
-          // 스폰 타이머
-          scene.time.addEvent({
-            delay: 700,
-            loop: true,
-            callback: () => {
-              if (cleared) return;
-              const choices: ItemKind[] = ["ring", "ring", "heart", "heart", "champagne", "envelope", "envelope", "cake"];
-              const kind = Phaser.Math.RND.pick(choices);
-              spawn(scene, kind);
-            },
-          });
-        },
-        update(this: Phaser.Scene, _time: number, delta: number) {
-          if (cleared) return;
-          elapsed += delta;
-          invuln = Math.max(0, invuln - delta);
-
-          const remaining = Math.max(0, Math.ceil((DURATION_MS - elapsed) / 1000));
-          timerText.setText(String(remaining));
-
-          // 점수 자연 증가 (생존 보너스)
-          if (Math.floor(elapsed / 1000) > Math.floor((elapsed - delta) / 1000)) {
-            score += 10;
-            scoreText.setText(String(score));
-          }
-
-          const dy = (speed * delta) / 1000;
-          [items, obstacles].forEach((grp) => {
-            grp.getChildren().slice().forEach((c) => {
-              const sprite = c as Phaser.GameObjects.Container;
-              sprite.y += dy;
-              if (sprite.y > H + 40) sprite.destroy();
-            });
-          });
-
-          // 충돌 체크
-          const checkHit = (grp: Phaser.GameObjects.Group, onHit: (kind: ItemKind, sprite: Phaser.GameObjects.Container) => void) => {
-            grp.getChildren().slice().forEach((c) => {
-              const sprite = c as Phaser.GameObjects.Container & { kind?: ItemKind; hit?: boolean };
-              if (sprite.hit) return;
-              const dx = sprite.x - player.x;
-              const dy2 = sprite.y - player.y;
-              if (Math.abs(dx) < 22 && Math.abs(dy2) < 28) {
-                sprite.hit = true;
-                onHit(sprite.kind!, sprite);
-              }
-            });
-          };
-
-          checkHit(items, (kind, sprite) => {
-            const t = TYPES[kind];
-            score += t.value;
-            scoreText.setText(String(score));
-            if (kind === "champagne") invuln = 3000;
-            sprite.destroy();
-            this.cameras.main.flash(80, 255, 240, 220);
-          });
-
-          checkHit(obstacles, (kind, sprite) => {
-            if (kind === "envelope") {
-              if (invuln <= 0) score = Math.max(0, score - 100);
-              scoreText.setText(String(score));
-              sprite.destroy();
-              this.cameras.main.shake(120, 0.005);
-            } else if (kind === "cake") {
-              if (invuln > 0) {
-                sprite.destroy();
-                return;
-              }
-              cleared = true;
-              endGame("crash", score);
-            }
-          });
-
-          // 속도 점진 가속
-          speed = 220 + Math.min(180, elapsed / 350);
-
-          // 종료
-          if (elapsed >= DURATION_MS) {
-            cleared = true;
-            endGame("clear", score + 500);
-          }
-        },
-      },
-    };
-
-    function spawn(scene: Phaser.Scene, kind: ItemKind) {
-      const t = TYPES[kind];
-      const x = laneX(Phaser.Math.Between(0, LANES - 1));
-      const c = scene.add.container(x, -30);
-      const g = scene.add.graphics();
-      if (kind === "ring") {
-        g.lineStyle(4, t.ring, 1);
-        g.strokeCircle(0, 0, 10);
-        g.fillStyle(0xffffff, 1);
-        g.fillCircle(0, -10, 3);
-      } else if (kind === "heart") {
-        g.fillStyle(t.ring, 1);
-        g.fillCircle(-5, -2, 6);
-        g.fillCircle(5, -2, 6);
-        g.fillTriangle(-10, 0, 10, 0, 0, 12);
-      } else if (kind === "champagne") {
-        g.fillStyle(t.color, 1);
-        g.fillRoundedRect(-6, -12, 12, 18, 2);
-        g.fillStyle(t.ring, 1);
-        g.fillRect(-8, -14, 16, 4);
-        g.fillStyle(0xffffff, 1);
-        g.fillCircle(-3, -8, 2);
-      } else if (kind === "envelope") {
-        g.fillStyle(t.color, 1);
-        g.fillRect(-12, -8, 24, 16);
-        g.lineStyle(2, t.ring, 1);
-        g.lineBetween(-12, -8, 0, 2);
-        g.lineBetween(12, -8, 0, 2);
-        g.strokeRect(-12, -8, 24, 16);
-      } else if (kind === "cake") {
-        g.fillStyle(t.color, 1);
-        g.fillRoundedRect(-14, -4, 28, 14, 2);
-        g.fillStyle(t.ring, 1);
-        g.fillRoundedRect(-10, -10, 20, 8, 2);
-        g.fillStyle(0xfff2cc, 1);
-        g.fillCircle(0, -12, 2);
-      }
-      c.add(g);
-      (c as Phaser.GameObjects.Container & { kind: ItemKind }).kind = kind;
-      if (kind === "envelope" || kind === "cake") obstacles.add(c);
-      else items.add(c);
-      scene.physics.world.enable(c);
-    }
-
-    const endGame = (why: "clear" | "crash", finalS: number) => {
+    const end = (why: "clear" | "crash", finalS: number) => {
+      if (finished) return;
+      finished = true;
+      runningRef.current = false;
       setReason(why);
       setFinalScore(Math.max(0, finalS));
       setStatus(why === "clear" ? "ending" : "gameover");
-      gameRef.current?.destroy(true);
-      gameRef.current = null;
     };
 
-    gameRef.current = new Phaser.Game(config);
+    const spawn = () => {
+      const kinds: ItemKind[] = ["ring", "ring", "heart", "champagne", "envelope", "cake"];
+      const kind = kinds[Math.floor(Math.random() * kinds.length)];
+      sprites.push({ x: laneX(Math.floor(Math.random() * LANES)), y: -30, lane: Math.floor(Math.random() * LANES), kind });
+    };
+
+    const drawBackdrop = () => {
+      ctx.fillStyle = "#fff5ec";
+      ctx.fillRect(0, 0, W, H);
+      // side grass
+      ctx.fillStyle = "rgba(216,229,210,0.5)";
+      ctx.fillRect(0, 0, W * 0.12, H);
+      ctx.fillRect(W * 0.88, 0, W * 0.12, H);
+      // carpet
+      ctx.fillStyle = "rgba(255,228,214,0.8)";
+      ctx.fillRect(W * 0.12, 0, W * 0.76, H);
+      // scroll lines
+      const offset = (elapsed * 0.1) % 24;
+      ctx.strokeStyle = "rgba(232,147,120,0.4)";
+      ctx.lineWidth = 1.5;
+      for (let y = -24 + offset; y < H; y += 24) {
+        ctx.beginPath();
+        ctx.moveTo(W * 0.12, y);
+        ctx.lineTo(W * 0.88, y);
+        ctx.stroke();
+      }
+      // lane guides
+      ctx.strokeStyle = "rgba(232,147,120,0.25)";
+      for (let i = 1; i < LANES; i++) {
+        const x = W * (0.12 + (i * 0.76) / LANES);
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, H);
+        ctx.stroke();
+      }
+    };
+
+    const drawPlayer = (x: number, y: number) => {
+      // body
+      ctx.fillStyle = "#4a3c36";
+      roundRect(ctx, x - 14, y - 14, 28, 32, 4);
+      ctx.fill();
+      // shirt
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(x - 4, y - 10, 8, 20);
+      // bow
+      ctx.fillStyle = "#e89378";
+      ctx.beginPath();
+      ctx.moveTo(x - 3, y - 10);
+      ctx.lineTo(x + 3, y - 10);
+      ctx.lineTo(x, y - 2);
+      ctx.closePath();
+      ctx.fill();
+      // head
+      ctx.fillStyle = "#fde0c5";
+      ctx.beginPath();
+      ctx.arc(x, y - 28, 11, 0, Math.PI * 2);
+      ctx.fill();
+      // hair
+      ctx.fillStyle = "#3a2a20";
+      ctx.fillRect(x - 9, y - 38, 18, 6);
+      // eyes
+      ctx.fillStyle = "#2f2a28";
+      ctx.beginPath();
+      ctx.arc(x - 4, y - 28, 1.5, 0, Math.PI * 2);
+      ctx.arc(x + 4, y - 28, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+    };
+
+    const drawItem = (s: Sprite) => {
+      const { x, y, kind } = s;
+      if (kind === "ring") {
+        ctx.strokeStyle = "#ffcf66";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(x, y, 10, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = "#fff6b0";
+        ctx.beginPath();
+        ctx.arc(x, y - 10, 3, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (kind === "heart") {
+        ctx.fillStyle = "#ff7a8a";
+        ctx.beginPath();
+        ctx.arc(x - 5, y - 2, 6, 0, Math.PI * 2);
+        ctx.arc(x + 5, y - 2, 6, 0, Math.PI * 2);
+        ctx.moveTo(x - 10, y);
+        ctx.lineTo(x + 10, y);
+        ctx.lineTo(x, y + 12);
+        ctx.closePath();
+        ctx.fill();
+      } else if (kind === "champagne") {
+        ctx.fillStyle = "#fff2cc";
+        roundRect(ctx, x - 6, y - 12, 12, 18, 2);
+        ctx.fill();
+        ctx.fillStyle = "#e6b35c";
+        ctx.fillRect(x - 8, y - 14, 16, 4);
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(x - 3, y - 8, 2, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (kind === "envelope") {
+        ctx.fillStyle = "#ffe0e0";
+        ctx.fillRect(x - 12, y - 8, 24, 16);
+        ctx.strokeStyle = "#d97a7a";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x - 12, y - 8, 24, 16);
+        ctx.beginPath();
+        ctx.moveTo(x - 12, y - 8);
+        ctx.lineTo(x, y + 2);
+        ctx.lineTo(x + 12, y - 8);
+        ctx.stroke();
+      } else if (kind === "cake") {
+        ctx.fillStyle = "#ffffff";
+        roundRect(ctx, x - 14, y - 4, 28, 14, 2);
+        ctx.fill();
+        ctx.fillStyle = "#ff5b78";
+        roundRect(ctx, x - 10, y - 10, 20, 8, 2);
+        ctx.fill();
+        ctx.fillStyle = "#fff2cc";
+        ctx.beginPath();
+        ctx.arc(x, y - 12, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    };
+
+    const drawHud = () => {
+      ctx.fillStyle = "#4a3c36";
+      ctx.font = "bold 22px 'Courier New', monospace";
+      ctx.textAlign = "left";
+      ctx.fillText(String(score), 12, 28);
+      ctx.textAlign = "right";
+      const remain = Math.max(0, Math.ceil((DURATION_MS - elapsed) / 1000));
+      ctx.fillText(String(remain), W - 12, 28);
+      ctx.textAlign = "left";
+    };
+
+    const step = (now: number) => {
+      if (!runningRef.current) return;
+      const dt = Math.min(48, now - last);
+      last = now;
+      elapsed += dt;
+      if (invuln > 0) invuln -= dt;
+
+      // speed ramp
+      speed = 220 + Math.min(200, elapsed * 0.003);
+
+      // spawn
+      spawnAcc += dt;
+      const spawnInterval = Math.max(400, 900 - elapsed * 0.008);
+      if (spawnAcc > spawnInterval) {
+        spawnAcc = 0;
+        spawn();
+      }
+
+      // move
+      const dy = (speed * dt) / 1000;
+      for (const s of sprites) s.y += dy;
+
+      drawBackdrop();
+
+      // items
+      for (const s of sprites) drawItem(s);
+
+      // player
+      const px = laneX(lane);
+      const py = H - 90;
+      if (invuln > 0 && Math.floor(elapsed / 80) % 2 === 0) {
+        ctx.globalAlpha = 0.5;
+      }
+      drawPlayer(px, py);
+      ctx.globalAlpha = 1;
+
+      drawHud();
+
+      // collision
+      for (const s of sprites) {
+        if (s.hit) continue;
+        if (Math.abs(s.x - px) < 22 && Math.abs(s.y - py + 14) < 28) {
+          s.hit = true;
+          const meta = ITEM_META[s.kind];
+          if (s.kind === "cake") {
+            if (invuln <= 0) {
+              end("crash", score);
+              return;
+            }
+          } else if (s.kind === "champagne") {
+            score += meta.value;
+            invuln = 3000;
+          } else {
+            score += meta.value;
+          }
+        }
+      }
+
+      // cleanup
+      for (let i = sprites.length - 1; i >= 0; i--) {
+        if (sprites[i].y > H + 40 || sprites[i].hit) sprites.splice(i, 1);
+      }
+
+      if (elapsed >= DURATION_MS && !cleared) {
+        cleared = true;
+        end("clear", score + 500);
+        return;
+      }
+
+      rafRef.current = requestAnimationFrame(step);
+    };
+
+    // input
+    let touchStartX = 0;
+    const onTouchStart = (e: TouchEvent) => {
+      touchStartX = e.touches[0]?.clientX ?? 0;
+    };
+    const onTouchEnd = (e: TouchEvent) => {
+      const endX = e.changedTouches[0]?.clientX ?? touchStartX;
+      const dx = endX - touchStartX;
+      if (Math.abs(dx) > 30) {
+        lane = Math.max(0, Math.min(LANES - 1, lane + (dx > 0 ? 1 : -1)));
+      } else {
+        const rect = canvas.getBoundingClientRect();
+        const rel = (endX - rect.left) / rect.width;
+        lane = rel < 0.33 ? 0 : rel > 0.66 ? 2 : 1;
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") lane = Math.max(0, lane - 1);
+      if (e.key === "ArrowRight") lane = Math.min(LANES - 1, lane + 1);
+    };
+    canvas.addEventListener("touchstart", onTouchStart, { passive: true });
+    canvas.addEventListener("touchend", onTouchEnd, { passive: true });
+    window.addEventListener("keydown", onKey);
+
+    const cleanup = () => {
+      canvas.removeEventListener("touchstart", onTouchStart);
+      canvas.removeEventListener("touchend", onTouchEnd);
+      window.removeEventListener("keydown", onKey);
+    };
+
+    // attach cleanup on status change
+    const prevOnStatus = runningRef.current;
+    void prevOnStatus;
+    (canvas as HTMLCanvasElement & { __cleanup?: () => void }).__cleanup = cleanup;
+
+    last = performance.now();
+    rafRef.current = requestAnimationFrame(step);
   };
+
+  useEffect(() => {
+    if (status !== "playing") {
+      const c = canvasRef.current as (HTMLCanvasElement & { __cleanup?: () => void }) | null;
+      if (c?.__cleanup) {
+        c.__cleanup();
+        c.__cleanup = undefined;
+      }
+    }
+  }, [status]);
 
   const submitScore = () => {
     if (!nick.trim()) return;
@@ -319,11 +382,40 @@ export default function WeddingRunner() {
     setFinalScore(0);
   };
 
-  useEffect(() => () => { gameRef.current?.destroy(true); gameRef.current = null; }, []);
+  const moveLane = (delta: number) => {
+    // Left/Right touch buttons dispatch a synthetic key event
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: delta < 0 ? "ArrowLeft" : "ArrowRight" }));
+  };
 
   return (
     <div className="flex flex-col items-center px-2 pb-12">
-      <div ref={containerRef} className="my-4 w-full max-w-[380px] min-h-[240px] overflow-hidden rounded-2xl shadow-lg ring-1 ring-[color:var(--color-line)]" style={{ touchAction: "none" }} />
+      <div
+        ref={containerRef}
+        className="my-4 w-full max-w-[380px] overflow-hidden rounded-2xl shadow-lg ring-1 ring-[color:var(--color-line)]"
+      >
+        <canvas
+          ref={canvasRef}
+          className="block w-full"
+          style={{ touchAction: status === "playing" ? "none" : "auto", background: "#fff5ec", minHeight: 240 }}
+        />
+      </div>
+
+      {status === "playing" && (
+        <div className="mt-2 flex w-full max-w-[380px] gap-3">
+          <button
+            onClick={() => moveLane(-1)}
+            className="flex-1 rounded-full bg-white py-3 text-[14px] font-medium tracking-[0.3em] text-[color:var(--color-rose-deep)] shadow-md ring-1 ring-[color:var(--color-line)]"
+          >
+            ← LEFT
+          </button>
+          <button
+            onClick={() => moveLane(1)}
+            className="flex-1 rounded-full bg-white py-3 text-[14px] font-medium tracking-[0.3em] text-[color:var(--color-rose-deep)] shadow-md ring-1 ring-[color:var(--color-line)]"
+          >
+            RIGHT →
+          </button>
+        </div>
+      )}
 
       {status === "intro" && (
         <div className="mt-2 w-full max-w-md rounded-3xl bg-white/80 p-6 text-center shadow-md ring-1 ring-[color:var(--color-line)]">
@@ -336,6 +428,7 @@ export default function WeddingRunner() {
           </p>
           <button
             onClick={startGame}
+            onTouchEnd={(e) => { e.preventDefault(); startGame(); }}
             className="mt-6 rounded-full bg-[color:var(--color-rose-deep)] px-8 py-3 text-[14px] font-medium tracking-[0.3em] text-white shadow-md"
           >
             START
@@ -396,4 +489,18 @@ export default function WeddingRunner() {
       )}
     </div>
   );
+}
+
+function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
 }
