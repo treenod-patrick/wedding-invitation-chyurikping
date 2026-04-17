@@ -62,21 +62,21 @@ export function Hero() {
 
       <div className="fade-in">
         <p className="eyebrow mb-6">We Invite You</p>
-        <h1 className="font-[family-name:var(--font-accent)] text-[2.6rem] leading-tight text-[color:var(--color-charcoal)]">
+        <h1 className="font-[family-name:var(--font-accent)] text-[3rem] leading-tight text-[color:var(--color-charcoal)]">
           {wedding.groom.nameEn}
         </h1>
-        <p className="my-3 font-[family-name:var(--font-accent)] italic text-base text-[color:var(--color-rose-deep)]">&amp;</p>
-        <h1 className="font-[family-name:var(--font-accent)] text-[2.6rem] leading-tight text-[color:var(--color-charcoal)]">
+        <p className="my-3 font-[family-name:var(--font-accent)] italic text-lg text-[color:var(--color-rose-deep)]">&amp;</p>
+        <h1 className="font-[family-name:var(--font-accent)] text-[3rem] leading-tight text-[color:var(--color-charcoal)]">
           {wedding.bride.nameEn}
         </h1>
 
         <FloralDivider />
 
-        <p className="mt-2 text-sm tracking-[0.25em] text-[color:var(--color-mute)]">{ymd} · {weekday}</p>
-        <p className="mt-2 text-xs tracking-[0.2em] text-[color:var(--color-mute)]">{wedding.venue.name}</p>
+        <p className="mt-2 text-base tracking-[0.25em] text-[color:var(--color-mute)]">{ymd} · {weekday}</p>
+        <p className="mt-2 text-sm tracking-[0.2em] text-[color:var(--color-mute)]">{wedding.venue.name}</p>
       </div>
 
-      <div className="absolute bottom-8 text-[10px] tracking-[0.4em] text-[color:var(--color-mute)] animate-pulse">SCROLL</div>
+      <div className="absolute bottom-8 text-[12px] tracking-[0.4em] text-[color:var(--color-mute)] animate-pulse">SCROLL</div>
     </section>
   );
 }
@@ -87,11 +87,11 @@ export function Greeting() {
   return (
     <Section>
       <SectionTitle en="Invitation" ko="초대합니다" />
-      <p className="whitespace-pre-line text-center leading-[2.1] text-[15px] text-[color:var(--color-charcoal)]/85">
+      <p className="whitespace-pre-line text-center leading-[2.1] text-[17px] text-[color:var(--color-charcoal)]/85">
         {wedding.greeting.body}
       </p>
       <FloralDivider />
-      <div className="text-center text-[13px] leading-loose text-[color:var(--color-mute)]">
+      <div className="text-center text-[15px] leading-loose text-[color:var(--color-mute)]">
         <p>
           <span className="text-[color:var(--color-charcoal)]/70">{wedding.groom.father}</span>
           <span className="mx-2">·</span>
@@ -124,7 +124,7 @@ export function People() {
           {p.nameEn}
         </p>
         <p className="mt-1 text-base text-[color:var(--color-charcoal)]">{p.name}</p>
-        <p className="mt-2 text-xs text-[color:var(--color-mute)]">
+        <p className="mt-2 text-sm text-[color:var(--color-mute)]">
           {p.father} · {p.mother}의 {who === "groom" ? "장남" : "장녀"}
         </p>
       </div>
@@ -171,14 +171,14 @@ export function Countdown() {
       <div className="grid grid-cols-4 gap-2 text-center">
         {cells.map((c) => (
           <div key={c.l} className="rounded-sm border border-[color:var(--color-line)] bg-white py-5">
-            <div className="font-[family-name:var(--font-accent)] text-[1.6rem] text-[color:var(--color-rose-deep)]">
+            <div className="font-[family-name:var(--font-accent)] text-[1.9rem] text-[color:var(--color-rose-deep)]">
               {String(c.n).padStart(2, "0")}
             </div>
-            <div className="mt-1 text-[10px] tracking-[0.3em] text-[color:var(--color-mute)]">{c.l}</div>
+            <div className="mt-1 text-[12px] tracking-[0.3em] text-[color:var(--color-mute)]">{c.l}</div>
           </div>
         ))}
       </div>
-      <p className="mt-8 text-center text-[13px] text-[color:var(--color-mute)]">
+      <p className="mt-8 text-center text-[15px] text-[color:var(--color-mute)]">
         <span className="text-[color:var(--color-charcoal)]">{wedding.groom.name}</span>
         <span className="mx-2 text-[color:var(--color-rose)]">♥</span>
         <span className="text-[color:var(--color-charcoal)]">{wedding.bride.name}</span>
@@ -213,12 +213,12 @@ export function Calendar() {
         <p className="text-center font-[family-name:var(--font-accent)] tracking-[0.2em] text-[color:var(--color-rose-deep)]">
           {monthName} · {year}
         </p>
-        <div className="mt-4 grid grid-cols-7 text-center text-[11px] tracking-widest text-[color:var(--color-mute)]">
+        <div className="mt-4 grid grid-cols-7 text-center text-[13px] tracking-widest text-[color:var(--color-mute)]">
           {["S", "M", "T", "W", "T", "F", "S"].map((w, i) => (
             <div key={i} className={`py-2 ${i === 0 ? "text-[color:var(--color-rose-deep)]" : ""}`}>{w}</div>
           ))}
           {cells.map((c, i) => (
-            <div key={i} className="py-2 text-[13px] text-[color:var(--color-charcoal)]/80">
+            <div key={i} className="py-2 text-[15px] text-[color:var(--color-charcoal)]/80">
               {c === day ? (
                 <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--color-rose)] text-white">
                   {c}
@@ -230,10 +230,10 @@ export function Calendar() {
           ))}
         </div>
       </div>
-      <p className="mt-6 text-center text-[13px] text-[color:var(--color-mute)]">
+      <p className="mt-6 text-center text-[15px] text-[color:var(--color-mute)]">
         {year}년 {month + 1}월 {day}일 {weekday}
       </p>
-      <p className="mt-1 text-center text-[13px] text-[color:var(--color-rose-deep)]">{timeLabel}</p>
+      <p className="mt-1 text-center text-[15px] text-[color:var(--color-rose-deep)]">{timeLabel}</p>
     </Section>
   );
 }
@@ -261,7 +261,7 @@ export function Gallery() {
       {wedding.gallery.length > 6 && (
         <button
           onClick={() => setExpanded((v) => !v)}
-          className="mx-auto mt-6 block rounded-full border border-[color:var(--color-line)] px-6 py-2 text-xs tracking-[0.25em] text-[color:var(--color-rose-deep)]"
+          className="mx-auto mt-6 block rounded-full border border-[color:var(--color-line)] px-6 py-2 text-sm tracking-[0.25em] text-[color:var(--color-rose-deep)]"
         >
           {expanded ? "접기" : "MORE +"}
         </button>
@@ -325,25 +325,25 @@ export function Location() {
       </div>
       <div className="mt-5 text-center">
         <p className="font-[family-name:var(--font-accent)] text-xl tracking-wide text-[color:var(--color-charcoal)]">{name}</p>
-        <p className="mt-2 text-[13px] text-[color:var(--color-mute)]">{address}</p>
-        <p className="text-[13px] text-[color:var(--color-mute)]">{detail} · {tel}</p>
+        <p className="mt-2 text-[15px] text-[color:var(--color-mute)]">{address}</p>
+        <p className="text-[15px] text-[color:var(--color-mute)]">{detail} · {tel}</p>
         <button
           onClick={() => copy(address)}
-          className="mt-3 rounded-full border border-[color:var(--color-line)] px-4 py-1.5 text-[11px] tracking-widest text-[color:var(--color-rose-deep)]"
+          className="mt-3 rounded-full border border-[color:var(--color-line)] px-4 py-1.5 text-[13px] tracking-widest text-[color:var(--color-rose-deep)]"
         >
           주소 복사
         </button>
       </div>
 
       <div className="mt-8">
-        <p className="mb-3 text-center text-[10px] tracking-[0.35em] text-[color:var(--color-mute)]">MAP</p>
+        <p className="mb-3 text-center text-[12px] tracking-[0.35em] text-[color:var(--color-mute)]">MAP</p>
         <div className="grid grid-cols-2 gap-2">
           <a
             href={naverWeb}
             onClick={openWithFallback(naverApp, naverWeb)}
             target="_blank"
             rel="noreferrer"
-            className="rounded-sm border border-[color:var(--color-line)] bg-white py-3 text-center text-[13px] text-[color:var(--color-charcoal)]"
+            className="rounded-sm border border-[color:var(--color-line)] bg-white py-3 text-center text-[15px] text-[color:var(--color-charcoal)]"
           >
             네이버 지도
           </a>
@@ -351,7 +351,7 @@ export function Location() {
             href={kakaoMapWeb}
             target="_blank"
             rel="noreferrer"
-            className="rounded-sm border border-[color:var(--color-line)] bg-white py-3 text-center text-[13px] text-[color:var(--color-charcoal)]"
+            className="rounded-sm border border-[color:var(--color-line)] bg-white py-3 text-center text-[15px] text-[color:var(--color-charcoal)]"
           >
             카카오맵
           </a>
@@ -359,14 +359,14 @@ export function Location() {
       </div>
 
       <div className="mt-3">
-        <p className="mb-3 text-center text-[10px] tracking-[0.35em] text-[color:var(--color-mute)]">NAVIGATION</p>
+        <p className="mb-3 text-center text-[12px] tracking-[0.35em] text-[color:var(--color-mute)]">NAVIGATION</p>
         <div className="grid grid-cols-3 gap-2">
           <a
             href={naverRouteWeb}
             onClick={openWithFallback(naverRouteApp, naverRouteWeb)}
             target="_blank"
             rel="noreferrer"
-            className="rounded-sm bg-[color:var(--color-charcoal)] py-3 text-center text-[12px] text-[color:var(--color-paper)]"
+            className="rounded-sm bg-[color:var(--color-charcoal)] py-3 text-center text-[14px] text-[color:var(--color-paper)]"
           >
             네이버내비
           </a>
@@ -375,20 +375,20 @@ export function Location() {
             onClick={openWithFallback(kakaoNaviApp, kakaoRouteWeb)}
             target="_blank"
             rel="noreferrer"
-            className="rounded-sm bg-[color:var(--color-rose-deep)] py-3 text-center text-[12px] text-white"
+            className="rounded-sm bg-[color:var(--color-rose-deep)] py-3 text-center text-[14px] text-white"
           >
             카카오내비
           </a>
           <a
             href={tmapApp}
-            className="rounded-sm border border-[color:var(--color-line)] bg-white py-3 text-center text-[12px] text-[color:var(--color-charcoal)]"
+            className="rounded-sm border border-[color:var(--color-line)] bg-white py-3 text-center text-[14px] text-[color:var(--color-charcoal)]"
           >
             티맵
           </a>
         </div>
       </div>
 
-      <div className="mt-8 space-y-3 rounded-sm bg-[color:var(--color-blush)]/25 p-5 text-[13px] text-[color:var(--color-charcoal)]/80">
+      <div className="mt-8 space-y-3 rounded-sm bg-[color:var(--color-blush)]/25 p-5 text-[15px] text-[color:var(--color-charcoal)]/80">
         <div className="flex gap-3">
           <span className="min-w-[48px] text-[color:var(--color-rose-deep)]">지하철</span>
           <span>7호선 하계역 도보 약 7분</span>
@@ -419,7 +419,7 @@ function CopyButton({ text }: { text: string }) {
           setTimeout(() => setCopied(false), 1500);
         } catch {}
       }}
-      className="ml-auto rounded-full border border-[color:var(--color-line)] px-3 py-1 text-[11px] tracking-widest text-[color:var(--color-rose-deep)]"
+      className="ml-auto rounded-full border border-[color:var(--color-line)] px-3 py-1 text-[13px] tracking-widest text-[color:var(--color-rose-deep)]"
     >
       {copied ? "복사됨" : "복사"}
     </button>
@@ -437,14 +437,14 @@ export function Account() {
           onClick={() => setOpen(open === who ? null : who)}
           className="flex w-full items-center justify-between rounded-sm border border-[color:var(--color-line)] bg-white px-5 py-4"
         >
-          <span className="text-[13px] tracking-wide">
+          <span className="text-[15px] tracking-wide">
             <span className="text-[color:var(--color-mute)]">{label}</span>
             <span className="ml-3 text-[color:var(--color-charcoal)]">{p.name}</span>
           </span>
           <span className="text-[color:var(--color-rose-deep)] text-lg leading-none">{open === who ? "−" : "+"}</span>
         </button>
         {open === who && (
-          <div className="mt-2 flex items-center gap-3 rounded-sm bg-[color:var(--color-blush)]/30 px-5 py-3 text-[13px]">
+          <div className="mt-2 flex items-center gap-3 rounded-sm bg-[color:var(--color-blush)]/30 px-5 py-3 text-[15px]">
             <span className="text-[color:var(--color-mute)]">{p.bankOwner}</span>
             <span className="text-[color:var(--color-charcoal)]">{p.bank}</span>
             <CopyButton text={p.bank.replace(/.*\s/, "")} />
@@ -456,7 +456,7 @@ export function Account() {
   return (
     <Section className="bg-[color:var(--color-blush)]/20">
       <SectionTitle en="Heart" ko="마음 전하실 곳" />
-      <p className="mb-8 text-center text-[13px] leading-loose text-[color:var(--color-mute)]">
+      <p className="mb-8 text-center text-[15px] leading-loose text-[color:var(--color-mute)]">
         참석이 어려우신 분들을 위해<br />
         조심스레 계좌번호를 안내드립니다.
       </p>
@@ -492,11 +492,11 @@ export function Share() {
         </p>
         <button
           onClick={share}
-          className="mx-auto mt-8 block rounded-full bg-[color:var(--color-charcoal)] px-7 py-3 text-[12px] tracking-[0.3em] text-[color:var(--color-paper)]"
+          className="mx-auto mt-8 block rounded-full bg-[color:var(--color-charcoal)] px-7 py-3 text-[14px] tracking-[0.3em] text-[color:var(--color-paper)]"
         >
           SHARE
         </button>
-        <p className="mt-10 text-[10px] tracking-[0.3em] text-[color:var(--color-mute)]">
+        <p className="mt-10 text-[12px] tracking-[0.3em] text-[color:var(--color-mute)]">
           MADE WITH LOVE
         </p>
       </div>
