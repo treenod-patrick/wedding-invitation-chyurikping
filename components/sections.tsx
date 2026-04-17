@@ -76,7 +76,7 @@ export function Hero() {
         <p className="mt-2 text-sm tracking-[0.2em] text-[color:var(--color-mute)]">{wedding.venue.name}</p>
       </div>
 
-      <div className="absolute bottom-8 text-[12px] tracking-[0.4em] text-[color:var(--color-mute)] animate-pulse">SCROLL</div>
+      <div className="absolute bottom-8 text-[24px] tracking-[0.4em] text-[color:var(--color-mute)] animate-pulse">SCROLL</div>
     </section>
   );
 }
@@ -174,7 +174,7 @@ export function Countdown() {
             <div className="font-[family-name:var(--font-accent)] text-[1.9rem] text-[color:var(--color-rose-deep)]">
               {String(c.n).padStart(2, "0")}
             </div>
-            <div className="mt-1 text-[12px] tracking-[0.3em] text-[color:var(--color-mute)]">{c.l}</div>
+            <div className="mt-1 text-[24px] tracking-[0.3em] text-[color:var(--color-mute)]">{c.l}</div>
           </div>
         ))}
       </div>
@@ -336,7 +336,7 @@ export function Location() {
       </div>
 
       <div className="mt-8">
-        <p className="mb-3 text-center text-[12px] tracking-[0.35em] text-[color:var(--color-mute)]">MAP</p>
+        <p className="mb-3 text-center text-[24px] tracking-[0.35em] text-[color:var(--color-mute)]">MAP</p>
         <div className="grid grid-cols-2 gap-2">
           <a
             href={naverWeb}
@@ -359,7 +359,7 @@ export function Location() {
       </div>
 
       <div className="mt-3">
-        <p className="mb-3 text-center text-[12px] tracking-[0.35em] text-[color:var(--color-mute)]">NAVIGATION</p>
+        <p className="mb-3 text-center text-[24px] tracking-[0.35em] text-[color:var(--color-mute)]">NAVIGATION</p>
         <div className="grid grid-cols-3 gap-2">
           <a
             href={naverRouteWeb}
@@ -496,7 +496,7 @@ export function Share() {
         >
           SHARE
         </button>
-        <p className="mt-10 text-[12px] tracking-[0.3em] text-[color:var(--color-mute)]">
+        <p className="mt-10 text-[24px] tracking-[0.3em] text-[color:var(--color-mute)]">
           MADE WITH LOVE
         </p>
       </div>
