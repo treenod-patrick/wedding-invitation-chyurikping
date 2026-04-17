@@ -185,7 +185,39 @@ export function Gallery() {
 export function Location() {
   const { name, address, detail, lat, lng, tel } = wedding.venue;
   const mapUrl = `https://maps.google.com/maps?q=${lat},${lng}&z=16&output=embed`;
-  const naverUrl = `https://map.naver.com/v5/search/${encodeURIComponent(address)}`;
+
+  const naverWeb = `https://map.naver.com/p/search/${encodeURIComponent(name)}`;
+  const naverApp = `nmap://place?lat=${lat}&lng=${lng}&name=${encodeURIComponent(name)}&appname=wedding.chyurikping`;
+  const naverRouteWeb = `https://map.naver.com/p/directions/-/-/-/car?c=15,0,0,0,dh&destination=${encodeURIComponent(name)},${lng},${lat}`;
+  const naverRouteApp = `nmap://route/car?dlat=${lat}&dlng=${lng}&dname=${encodeURIComponent(name)}&appname=wedding.chyurikping`;
+
+  const kakaoMapWeb = `https://map.kakao.com/link/map/${encodeURIComponent(name)},${lat},${lng}`;
+  const kakaoRouteWeb = `https://map.kakao.com/link/to/${encodeURIComponent(name)},${lat},${lng}`;
+  const kakaoNaviApp = `kakaomap://route?ep=${lat},${lng}&by=CAR`;
+
+  const tmapApp = `tmap://route?goalname=${encodeURIComponent(name)}&goalx=${lng}&goaly=${lat}`;
+
+  const openWithFallback = (appUrl: string, webUrl: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (typeof window === "undefined") return;
+    const ua = navigator.userAgent || "";
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
+    if (!isMobile) return;
+    e.preventDefault();
+    const t = Date.now();
+    const fallback = setTimeout(() => {
+      if (Date.now() - t < 1600) window.location.href = webUrl;
+    }, 1200);
+    window.location.href = appUrl;
+    window.addEventListener("pagehide", () => clearTimeout(fallback), { once: true });
+  };
+
+  const copy = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      alert("주소가 복사되었습니다.");
+    } catch {}
+  };
+
   return (
     <Section>
       <SectionTitle en="Location" ko="오시는 길" />
@@ -196,20 +228,76 @@ export function Location() {
         <p className="text-base font-semibold">{name}</p>
         <p className="mt-1 text-sm text-[color:var(--color-warm-gray)]">{address}</p>
         <p className="text-sm text-[color:var(--color-warm-gray)]">{detail} · {tel}</p>
+        <button
+          onClick={() => copy(address)}
+          className="mt-2 rounded border border-[color:var(--color-warm-gray)]/30 px-3 py-1 text-xs text-[color:var(--color-warm-gray)]"
+        >
+          주소 복사
+        </button>
       </div>
-      <div className="mt-5 grid grid-cols-2 gap-2">
-        <a href={naverUrl} target="_blank" rel="noreferrer" className="rounded-lg border border-[color:var(--color-warm-gray)]/30 py-3 text-center text-sm">네이버 지도</a>
-        <a href={`https://map.kakao.com/?q=${encodeURIComponent(address)}`} target="_blank" rel="noreferrer" className="rounded-lg border border-[color:var(--color-warm-gray)]/30 py-3 text-center text-sm">카카오맵</a>
+
+      <div className="mt-6">
+        <p className="mb-2 text-xs tracking-[0.2em] text-[color:var(--color-warm-gray)]">지도 보기</p>
+        <div className="grid grid-cols-2 gap-2">
+          <a
+            href={naverWeb}
+            onClick={openWithFallback(naverApp, naverWeb)}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-lg border border-[color:var(--color-warm-gray)]/30 py-3 text-center text-sm"
+          >
+            네이버 지도
+          </a>
+          <a
+            href={kakaoMapWeb}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-lg border border-[color:var(--color-warm-gray)]/30 py-3 text-center text-sm"
+          >
+            카카오맵
+          </a>
+        </div>
       </div>
+
+      <div className="mt-4">
+        <p className="mb-2 text-xs tracking-[0.2em] text-[color:var(--color-warm-gray)]">길찾기 · 내비게이션</p>
+        <div className="grid grid-cols-3 gap-2">
+          <a
+            href={naverRouteWeb}
+            onClick={openWithFallback(naverRouteApp, naverRouteWeb)}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-lg bg-[color:var(--color-ink)] py-3 text-center text-xs text-[color:var(--color-ivory)]"
+          >
+            네이버내비
+          </a>
+          <a
+            href={kakaoRouteWeb}
+            onClick={openWithFallback(kakaoNaviApp, kakaoRouteWeb)}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-lg bg-[color:var(--color-gold)] py-3 text-center text-xs text-white"
+          >
+            카카오내비
+          </a>
+          <a
+            href={tmapApp}
+            className="rounded-lg border border-[color:var(--color-warm-gray)]/30 py-3 text-center text-xs"
+          >
+            티맵
+          </a>
+        </div>
+      </div>
+
       <div className="mt-6 space-y-3 text-sm text-[color:var(--color-ink)]/80">
         <div>
-          <b className="text-[color:var(--color-gold)]">지하철</b> · 2호선 OO역 3번 출구에서 도보 5분
+          <b className="text-[color:var(--color-gold)]">지하철</b> · 7호선 하계역 도보 약 7분
         </div>
         <div>
-          <b className="text-[color:var(--color-gold)]">버스</b> · 간선 140, 341 · 지선 3412 (OO빌딩 앞 하차)
+          <b className="text-[color:var(--color-gold)]">주소</b> · {address}
         </div>
         <div>
-          <b className="text-[color:var(--color-gold)]">주차</b> · 건물 지하 주차장 2시간 무료
+          <b className="text-[color:var(--color-gold)]">주차</b> · 건물 주차장 이용 가능
         </div>
       </div>
     </Section>
