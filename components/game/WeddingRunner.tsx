@@ -46,7 +46,7 @@ export default function WeddingRunner() {
     if (!containerRef.current || gameRef.current) return;
     setStatus("playing");
 
-    const Phaser = (await import("phaser")).default;
+    const Phaser = await import("phaser");
 
     const containerW = containerRef.current.clientWidth || window.innerWidth - 80;
     const W = Math.max(260, Math.min(380, containerW));
@@ -323,7 +323,7 @@ export default function WeddingRunner() {
 
   return (
     <div className="flex flex-col items-center px-2 pb-12">
-      <div ref={containerRef} className="my-4 overflow-hidden rounded-2xl shadow-lg ring-1 ring-[color:var(--color-line)]" />
+      <div ref={containerRef} className="my-4 w-full max-w-[380px] min-h-[240px] overflow-hidden rounded-2xl shadow-lg ring-1 ring-[color:var(--color-line)]" style={{ touchAction: "none" }} />
 
       {status === "intro" && (
         <div className="mt-2 w-full max-w-md rounded-3xl bg-white/80 p-6 text-center shadow-md ring-1 ring-[color:var(--color-line)]">
